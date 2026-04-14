@@ -1,0 +1,26 @@
+✅ Purpose
+
+Used to access internal services (like RDP/SMB/HTTP) through a compromised machine (pivot host).
+
+🧠 Concept
+
+You map:
+
+Your local port → Internal target port via pivot
+⚙️ Command
+
+ssh -L 33389:192.168.1.10:3389 user@10.10.10.5 -N
+
+🔍 Line-by-Line Explanation
+ssh → Start SSH client
+-L → Local port forwarding option
+33389 → Local port on YOUR machine (listener)
+192.168.1.10:3389 → Internal target (RDP service)
+user@10.10.10.5 → Pivot host (already compromised)
+-N → No shell, only tunnel (keeps connection clean)
+🎯 Access Service
+
+xfreerdp /v:127.0.0.1:33389 /u:admin /p:pass /cert:ignore
+
+127.0.0.1:33389 → Redirected to internal machine
+You are now accessing internal RDP via pivot
