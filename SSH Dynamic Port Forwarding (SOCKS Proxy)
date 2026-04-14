@@ -1,0 +1,14 @@
+✅ Purpose
+
+Create a SOCKS proxy to route tools (like proxychains, browsers, nmap)
+
+⚙️ Command
+
+ssh -D 1080 user@10.10.10.5 -N
+
+🔍 Explanation
+-D 1080 → Create SOCKS proxy on port 1080
+All traffic routed through pivot host
+🎯 Usage
+
+Configure proxychains → use 127.0.0.1:1080
