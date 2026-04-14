@@ -1,0 +1,26 @@
+Tool	                Use Case
+
+SSH -L	                Simple port forward
+SSH -D	                SOCKS proxy
+SOCAT	                Flexible forwarding
+PLINK	                Windows SSH
+CHISEL	                Firewall bypass (reverse)
+SSHUTTLE	        Full subnet access
+PROXYCHAINS	        Force proxy usage
+Metasploit	        Auto routing + pivot
+
+
+💡 CPENT Exam Tips
+If SSH available → use SSH tunneling
+If no SSH but outbound allowed → use CHISEL
+If you want full subnet → use SSHUTTLE
+If Meterpreter session → autoroute + socks
+Always combine:
+SOCKS → Proxychains → Nmap
+
+
+⚠️ Common Mistakes (Exam Killers)
+Forgetting -N in SSH
+Not configuring proxychains.conf
+Using -sS scan (won’t work via proxychains) → use -sT
+Wrong IP direction (attacker vs pivot confusion)
