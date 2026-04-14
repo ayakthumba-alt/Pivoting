@@ -1,0 +1,19 @@
+✅ Purpose
+
+Force tools to use SOCKS proxy
+
+⚙️ Config File
+
+/etc/proxychains.conf
+
+Add:
+
+socks5 127.0.0.1 1080
+
+⚙️ Usage
+
+proxychains nmap -sT -Pn 192.168.1.10
+
+🔍 Explanation
+proxychains → Wrap tool
+Forces traffic through SOCKS proxy
