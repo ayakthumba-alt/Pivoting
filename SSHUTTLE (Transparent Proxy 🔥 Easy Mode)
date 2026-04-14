@@ -1,0 +1,17 @@
+✅ Purpose
+
+Acts like VPN over SSH
+
+⚙️ Command
+
+sshuttle -r user@10.10.10.5 192.168.1.0/24
+
+🔍 Explanation
+-r → Remote pivot host
+192.168.1.0/24 → Internal subnet
+🎯 Result
+You can directly run:
+
+nmap 192.168.1.10
+
+(No proxychains needed)
