@@ -1,0 +1,11 @@
+✅ Purpose
+
+Windows version of SSH tunneling
+
+⚙️ Command
+
+plink.exe -L 33389:192.168.1.10:3389 user@10.10.10.5 -N
+
+🔍 Explanation
+Same logic as SSH
+Used when pivot is Windows machine
