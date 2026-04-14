@@ -1,0 +1,15 @@
+✅ Purpose
+
+Flexible relay between ports, protocols (TCP ↔ TCP, TCP ↔ UDP)
+
+⚙️ Command (Pivot → Internal)
+
+socat TCP-LISTEN:4444,fork TCP:192.168.1.10:3389
+
+🔍 Explanation
+TCP-LISTEN:4444 → Open port 4444 on pivot
+fork → Handle multiple connections
+TCP:192.168.1.10:3389 → Forward to internal RDP
+🎯 Access from Attacker
+
+xfreerdp /v:10.10.10.5:4444 /u:user /p:pass
